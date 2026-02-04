@@ -1,5 +1,4 @@
 # The Asteroids game but there is only one asteroid
-**[Play live here](https://wonderful-ardinghelli-e80c7a.netlify.app)**
 inspired by the [2019 GMTK Game Jam](https://itch.io/jam/gmtk-2019) theme "only one" 
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).

@@ -74,7 +74,6 @@ export class Reacteroids extends Component {
 
     const context = this.refs.canvas.getContext('2d')
     this.setState({ context: context })
-    this.startGame()
     requestAnimationFrame(() => { this.update() })
   }
 
@@ -269,26 +268,38 @@ export class Reacteroids extends Component {
       message = this.state.currentScore + ' points.'
     }
 
-    if (!this.state.inGame) {
+    if (!this.state.inGame && !this.state.gameWon && this.state.currentScore === 0) {
       endgame = (
-        <div className='endgame'>
-          <p>Game over.</p>
-          <p>{message}</p>
-          <button
-            onClick={this.startGame.bind(this)}>
-            try again?
-          </button>
-        </div>
+        <main className='start-screen'>
+          <div className='scanline' aria-hidden='true' />
+          <div className='start-panel'>
+            <p className='eyebrow'>A CERXME ORIGINAL // 198X</p>
+            <h1>ONE<br /><span>ASTEROID</span></h1>
+            <p className='tagline'>A tiny mission born from a stroke of inspiration.</p>
+            <div className='mission-copy'>
+              <p>This is an Asteroids game, but there is only one asteroid.</p>
+              <p>Destroy it while avoiding the debris, while flying your rocket in space.</p>
+            </div>
+            <div className='rules-grid'>
+              <div><strong>A / D</strong><span>STEER</span></div>
+              <div><strong>W</strong><span>THRUST</span></div>
+              <div><strong>S</strong><span>HALT</span></div>
+              <div><strong>SPACE</strong><span>FIRE</span></div>
+            </div>
+            <button className='start-button' onClick={this.startGame.bind(this)}>
+              <span>INSERT COIN</span><b>START MISSION</b>
+            </button>
+            <p className='start-hint'>ARROW KEYS ALSO SUPPORTED</p>
+          </div>
+        </main>
       )
-    }
-    if (!this.state.inGame && this.state.gameWon) {
+    } else if (!this.state.inGame) {
       endgame = (
         <div className='endgame'>
-          <p>You win!</p>
+          <p>{this.state.gameWon ? 'You win!' : 'Game over.'}</p>
           <p>{message}</p>
-          <button
-            onClick={this.startGame.bind(this)}>
-            play again?
+          <button onClick={this.startGame.bind(this)}>
+            {this.state.gameWon ? 'play again?' : 'try again?'}
           </button>
         </div>
       )

@@ -296,13 +296,20 @@ export class Reacteroids extends Component {
       )
     } else if (!this.state.inGame) {
       endgame = (
-        <div className='endgame'>
-          <p>{this.state.gameWon ? 'You win!' : 'Game over.'}</p>
-          <p>{message}</p>
-          <button onClick={this.startGame.bind(this)}>
-            {this.state.gameWon ? 'play again?' : 'try again?'}
-          </button>
-        </div>
+        <main className={'endgame ' + (this.state.gameWon ? 'victory-screen' : 'defeat-screen')}>
+          <div className='endgame-grid' aria-hidden='true' />
+          <div className='endgame-panel'>
+            <p className='endgame-kicker'>{this.state.gameWon ? 'MISSION STATUS // COMPLETE' : 'MISSION STATUS // CRITICAL'}</p>
+            <h2>{this.state.gameWon ? 'ASTEROID\nDOWN' : 'SHIP\nLOST'}</h2>
+            <div className='endgame-rule' />
+            <p className='endgame-score'>{message}</p>
+            <p className='endgame-copy'>{this.state.gameWon ? 'The last rock has been reduced to stardust.' : 'The debris field claimed your rocket. The void is still waiting.'}</p>
+            <button className='relaunch-button' onClick={this.startGame.bind(this)}>
+              <span>{this.state.gameWon ? 'LAUNCH AGAIN' : 'RE-ENTER THE VOID'}</span>
+              <b>▶</b>
+            </button>
+          </div>
+        </main>
       )
     }
 

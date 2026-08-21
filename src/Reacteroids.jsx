@@ -35,6 +35,7 @@ export class Reacteroids extends Component {
       },
       currentScore: 0,
       topScore: localStorage['topscore'] || 0,
+      bossHealth: 100,
       inGame: false,
       gameWon: false,
       asteroids: []
@@ -133,11 +134,18 @@ export class Reacteroids extends Component {
     }
   }
 
+  updateBossHealth (health) {
+    if (this.state.inGame) {
+      this.setState({ bossHealth: Math.max(0, Math.round(health)) })
+    }
+  }
+
   startGame () {
     this.setState({
       inGame: true,
       gameWon: false,
       currentScore: 0,
+      bossHealth: 100,
     })
 
     // Make ship
@@ -214,6 +222,7 @@ export class Reacteroids extends Component {
       },
       create: this.createObject.bind(this),
       addScore: this.addScore.bind(this),
+      onHealthChange: this.updateBossHealth.bind(this),
       gametype: 'Boss',
       onDie: this.gameOver.bind(this)
     })
@@ -326,6 +335,12 @@ export class Reacteroids extends Component {
       <div>
         { endgame }
         <span className='score current-score' >Score: {this.state.currentScore}</span>
+        {this.state.inGame && (
+          <div className='boss-health' aria-label={'Boss health ' + this.state.bossHealth + ' percent'}>
+            <div className='boss-health-header'><span>BOSS VITALS</span><strong>{this.state.bossHealth}%</strong></div>
+            <div className='boss-health-track'><div className='boss-health-fill' style={{ width: this.state.bossHealth + '%' }} /></div>
+          </div>
+        )}
         <span className='controls' >
           Use [A][W][D] or [←][↑][→] to MOVE <br />
           Use [S] or [↓] to HALT<br />

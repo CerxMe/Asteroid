@@ -36,6 +36,11 @@ canvas {
   letter-spacing: .12em;
 }
 .score { color: var(--cyan); }
+.boss-health { position: absolute; top: 18px; left: 50%; z-index: 1; width: min(360px, 38vw); transform: translateX(-50%); color: var(--ink); font-family: 'Source Code Pro', monospace; }
+.boss-health-header { display: flex; justify-content: space-between; gap: 12px; margin-bottom: 7px; font-size: 11px; letter-spacing: .16em; }
+.boss-health-header strong { color: var(--cyan); font-weight: 700; }
+.boss-health-track { height: 12px; padding: 2px; border: 1px solid var(--cyan); background: rgba(20,11,12,.9); box-shadow: 0 0 16px rgba(200,164,93,.18); }
+.boss-health-fill { height: 100%; min-width: 0; background: linear-gradient(90deg, var(--pink), var(--cyan)); box-shadow: 0 0 12px rgba(200,164,93,.65); transition: width .18s ease-out; }
 .controls { right: 20px; color: var(--muted); text-align: right; line-height: 1.6; }
 .start-screen {
   position: absolute;
@@ -91,4 +96,4 @@ button:hover { background: var(--pink); border-color: var(--pink); color: var(--
 .relaunch-button:hover { color: var(--ink); }
 @keyframes panel-in { from { opacity: 0; transform: scale(.92) translateY(18px); } to { opacity: 1; transform: scale(1) translateY(0); } }
 .debugScreen { display: block; background: var(--space); color: var(--ink); border: 1px solid var(--ink); position: absolute; z-index: 5; inset: 0 auto 0 0; width: 300px; }
-@media (max-width: 620px) { .start-panel { padding: 28px 22px; } .rules-grid { grid-template-columns: repeat(2, 1fr); } .controls { display: none; } }
+@media (max-width: 620px) { .start-panel { padding: 28px 22px; } .rules-grid { grid-template-columns: repeat(2, 1fr); } .controls { display: none; } .boss-health { top: 16px; width: 42vw; } }

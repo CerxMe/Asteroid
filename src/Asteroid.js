@@ -19,6 +19,8 @@ export default class Asteroid {
     this.gametype = args.gametype
     this.name = 'Asteroid'
     this.stage = args.stage || 4
+    this.maxHealth = args.maxHealth || (args.gametype === 'Boss' ? 100 : 1)
+    this.onHealthChange = args.onHealthChange || null
     this.color = args.color || '#c8a45d'
     this.delete = false
     this.score = args.score || 100
@@ -137,6 +139,8 @@ export default class Asteroid {
     if (this.gametype === 'Boss') {
       const shrinkPower = 15
       const size = this.radius - shrinkPower
+      const health = Math.max(0, ((size - 15) / (this.maxHealth * 0.85)) * 100)
+      if (this.onHealthChange) this.onHealthChange(health)
 
       if (size > 15) {
         this.radius = size

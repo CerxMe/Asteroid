@@ -296,7 +296,7 @@ export class Reacteroids extends Component {
         <main className='start-screen'>
           <div className='scanline' aria-hidden='true' />
           <div className='start-panel'>
-            <p className='eyebrow'><a href='https://github.com/CerxMe/Asteroid' target='_blank' rel='noopener noreferrer'>A CERXME ORIGINAL // OPEN-SOURCE GAME</a></p>
+            <p className='eyebrow'><a href='https://github.com/CerxMe/Asteroid' target='_blank' rel='noopener noreferrer'>A CERXME ORIGINAL // OPEN-SOURCE</a></p>
             <h1>ONE<br /><span>ASTEROID</span></h1>
             <p className='tagline'>A tiny mission born from a stroke of inspiration.</p>
             <div className='mission-copy'>

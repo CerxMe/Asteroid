@@ -321,11 +321,21 @@ export class Reacteroids extends Component {
     }
 
 
-//        <DebugScreen asteroids={this.asteroids} bullets={this.bullets}/>
+    const boss = this.boss
+    const bossHealth = boss ? Math.max(0, Math.min(100, Math.round((boss.radius / boss.maxHealth) * 100))) : 0
+
+    //        <DebugScreen asteroids={this.asteroids} bullets={this.bullets}/>
     return (
       <div>
         { endgame }
         <span className='score current-score' >Score: {this.state.currentScore}</span>
+        {this.state.inGame && boss && (
+          <div className='boss-health' role='status' aria-label={'Boss health: ' + bossHealth + ' percent'}>
+            <div className='boss-health-heading'><span>THE VOID TITAN</span><strong>{bossHealth}%</strong></div>
+            <div className='boss-health-track'><div className='boss-health-fill' style={{ width: bossHealth + '%' }} /></div>
+            <div className='boss-health-caption'>ANCIENT ASTEROID // DAMAGE THE CORE</div>
+          </div>
+        )}
         <span className='controls' >
           Use [A][W][D] or [←][↑][→] to MOVE <br />
           Use [S] or [↓] to HALT<br />

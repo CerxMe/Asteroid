@@ -345,7 +345,7 @@ export class Reacteroids extends Component {
         )}
         {this.state.inGame && this.state.combatStarted && (
           <div className='boss-health' aria-label={'Boss health ' + this.state.bossHealth + ' percent'}>
-            <div className='boss-health-header'><span>BOSS VITALS</span><strong>{this.state.bossHealth}%</strong></div>
+            <div className='boss-health-header'><span>BOSS HEALTH</span><strong>{this.state.bossHealth}%</strong></div>
             <div className='boss-health-track'><div className='boss-health-fill' style={{ width: this.state.bossHealth + '%' }} /></div>
           </div>
         )}

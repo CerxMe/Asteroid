@@ -12,7 +12,6 @@ export default class Asteroid {
     this.rotation = 0
     this.rotationSpeed = randomNumBetween(-0.4, 0.4)
     this.radius = args.size
-    this.maxHealth = args.maxHealth || args.size
     this.create = args.create
     this.addScore = args.addScore
     this.onDie = args.onDie || null

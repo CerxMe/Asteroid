@@ -4,7 +4,7 @@ A baroque, single-asteroid arcade game inspired by the [2019 GMTK Game Jam](http
 
 ## Play online
 
-[Launch One Asteroid on Vercel](https://asteroid.vercel.app)
+[Launch One Asteroid on Vercel](https://v0-one-asteroid.vercel.app)
 
 ## Modernization
 

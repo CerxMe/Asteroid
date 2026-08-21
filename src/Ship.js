@@ -19,7 +19,6 @@ export default class Ship {
     this.create = args.create
     this.onDie = args.onDie
     this.name = 'Ship'
-    console.log(this.game)
   }
 
   destroy () {
@@ -39,7 +38,7 @@ export default class Ship {
           x: randomNumBetween(-1.5, 1.5),
           y: randomNumBetween(-1.5, 1.5)
         },
-        color: '#fff'
+        color: '#c8a45d'
       })
       this.create(particle, 'particles')
     }
@@ -142,8 +141,8 @@ export default class Ship {
     context.save()
     context.translate(this.position.x, this.position.y)
     context.rotate(this.rotation * Math.PI / 180)
-    context.strokeStyle = '#ffffff'
-    context.fillStyle = '#000000'
+    context.strokeStyle = '#c8a45d'
+    context.fillStyle = '#140b0c'
     context.lineWidth = 2
     context.beginPath()
     context.moveTo(0, -15)

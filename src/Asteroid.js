@@ -19,7 +19,7 @@ export default class Asteroid {
     this.gametype = args.gametype
     this.name = 'Asteroid'
     this.stage = args.stage || 4
-    this.color = args.color || '#FFF'
+    this.color = args.color || '#c8a45d'
     this.delete = false
     this.score = args.score || 100
 
@@ -142,9 +142,9 @@ export default class Asteroid {
         this.radius = size
         // redraw asteroid
         this.vertices = asteroidVertices(size / 16 * 8, size)
-        this.color = '#ff15ff' //hitcolor
-        setTimeout(() => {
-          this.color = '#fff'
+      this.color = '#7f1d2d' //hitcolor
+      setTimeout(() => {
+        this.color = '#c8a45d'
         }, 200)
       } else {
         this.delete = true

@@ -43,9 +43,18 @@ export class Reacteroids extends Component {
     this.asteroids = []
     this.bullets = []
     this.particles = []
+    this.frameState = { screen: this.state.screen, keys: this.state.keys, context: null }
+    this.animationFrame = null
+    this.running = false
   }
 
   handleResize (value, e) {
+    const screen = {
+      width: window.innerWidth,
+      height: window.innerHeight,
+      ratio: window.devicePixelRatio || 1
+    }
+    this.frameState.screen = screen
     this.setState({
       screen: {
         width: window.innerWidth,
@@ -56,44 +65,49 @@ export class Reacteroids extends Component {
   }
 
   handleKeys (value, e) {
-    let keys = this.state.keys
+    const keys = this.frameState.keys
     if (e.keyCode === KEY.DOWN || e.keyCode === KEY.S) keys.down = value
     if (e.keyCode === KEY.LEFT || e.keyCode === KEY.A) keys.left = value
     if (e.keyCode === KEY.RIGHT || e.keyCode === KEY.D) keys.right = value
     if (e.keyCode === KEY.UP || e.keyCode === KEY.W) keys.up = value
     if (e.keyCode === KEY.SPACE) keys.space = value
-    this.setState({
-      keys: keys
-    })
+    this.frameState.keys = keys
   }
 
   componentDidMount () {
-    window.addEventListener('keyup', this.handleKeys.bind(this, false))
-    window.addEventListener('keydown', this.handleKeys.bind(this, true))
-    window.addEventListener('resize', this.handleResize.bind(this, false))
+    this.boundKeyUp = this.handleKeys.bind(this, false)
+    this.boundKeyDown = this.handleKeys.bind(this, true)
+    this.boundResize = this.handleResize.bind(this, false)
+    window.addEventListener('keyup', this.boundKeyUp)
+    window.addEventListener('keydown', this.boundKeyDown)
+    window.addEventListener('resize', this.boundResize)
 
     const context = this.canvas.getContext('2d')
-    this.setState({ context: context }, () => {
-      requestAnimationFrame(() => { this.update() })
-    })
+    this.frameState.context = context
+    this.running = true
+    this.animationFrame = requestAnimationFrame(this.update)
   }
 
   componentWillUnmount () {
-    window.removeEventListener('keyup', this.handleKeys)
-    window.removeEventListener('keydown', this.handleKeys)
-    window.removeEventListener('resize', this.handleResize)
+    this.running = false
+    if (this.animationFrame) cancelAnimationFrame(this.animationFrame)
+    window.removeEventListener('keyup', this.boundKeyUp)
+    window.removeEventListener('keydown', this.boundKeyDown)
+    window.removeEventListener('resize', this.boundResize)
   }
 
-  update () {
-    const context = this.state.context
+  update = () => {
+    if (!this.running) return
+    const frameState = this.frameState
+    const context = frameState.context
 
     context.save()
-    context.scale(this.state.screen.ratio, this.state.screen.ratio)
+    context.scale(frameState.screen.ratio, frameState.screen.ratio)
 
     // Motion trail
-    context.fillStyle = '#000' // BACKGROUND COLOR
+    context.fillStyle = '#08050a' // BAROQUE NIGHT BACKDROP
     context.globalAlpha = 0.4
-    context.fillRect(0, 0, this.state.screen.width, this.state.screen.height)
+    context.fillRect(0, 0, frameState.screen.width, frameState.screen.height)
     context.globalAlpha = 1
 
     // Check for colisions
@@ -106,15 +120,9 @@ export class Reacteroids extends Component {
     this.updateObjects(this.bullets, 'bullets')
     this.updateObjects(this.ship, 'ship')
 
-    // Update asteroids
-    this.setState({
-      asteroids: this.asteroids.length
-    })
-
     context.restore()
 
-    // Next frame
-    requestAnimationFrame(() => { this.update() })
+    this.animationFrame = requestAnimationFrame(this.update)
   }
 
   addScore (points) {
@@ -218,14 +226,13 @@ export class Reacteroids extends Component {
   }
 
   updateObjects (items, group) {
-    let index = 0
-    for (let item of items) {
+    for (let index = items.length - 1; index >= 0; index--) {
+      const item = items[index]
       if (item.delete) {
-        this[group].splice(index, 1)
+        items.splice(index, 1)
       } else {
-        items[index].render(this.state)
+        item.render(this.frameState)
       }
-      index++
     }
   }
 

@@ -1,6 +1,6 @@
 # One Asteroid
 
-A baroque, single-asteroid arcade game inspired by the [2019 GMTK Game Jam](https://itch.io/jam/gmtk-2019) theme “only one”. Destroy the asteroid, survive its debris, and keep your rocket moving through the void.
+Single-asteroid arcade game inspired by the [2019 GMTK Game Jam](https://itch.io/jam/gmtk-2019) theme “only one”. Destroy the asteroid, survive its debris, and keep your rocket moving through the void.
 
 ## Play online
 

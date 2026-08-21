@@ -12,6 +12,7 @@ export default class Asteroid {
     this.rotation = 0
     this.rotationSpeed = randomNumBetween(-0.4, 0.4)
     this.radius = args.size
+    this.initialRadius = args.size
     this.create = args.create
     this.addScore = args.addScore
     this.onDie = args.onDie || null
@@ -139,7 +140,7 @@ export default class Asteroid {
     if (this.gametype === 'Boss') {
       const shrinkPower = 15
       const size = this.radius - shrinkPower
-      const health = Math.max(0, ((size - 15) / (this.maxHealth * 0.85)) * 100)
+      const health = Math.min(100, Math.max(0, ((size - 15) / (this.initialRadius - 15)) * 100))
       if (this.onHealthChange) this.onHealthChange(health)
 
       if (size > 15) {

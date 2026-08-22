@@ -124,14 +124,17 @@ export default class Asteroid {
     const distance = Math.max(1, Math.sqrt(dx * dx + dy * dy))
     const normalX = dx / distance
     const normalY = dy / distance
-    const impulse = Math.max(0.15, (this.radius / distance) * 0.9)
+    const blastRadius = Math.max(24, Math.min(this.radius * 0.42, 92))
+    const falloff = Math.max(0.18, 1 - Math.min(distance, blastRadius) / blastRadius)
+    const impactAngle = Math.atan2(impact.y - this.position.y, impact.x - this.position.x)
+    const impulse = Math.max(0.2, falloff * 2.4)
     this.velocity.x += normalX * impulse
     this.velocity.y += normalY * impulse
     this.craters.push({
       x: impact.x - this.position.x,
       y: impact.y - this.position.y,
-      radius: Math.min(28, Math.max(9, this.radius * 0.12)),
-      rotation: this.rotation
+      radius: Math.min(42, Math.max(10, blastRadius * (0.34 + falloff * 0.3))),
+      rotation: impactAngle
     })
     if (this.craters.length > 8) this.craters.shift()
 
@@ -159,10 +162,11 @@ export default class Asteroid {
       this.delete = true
     }
 
-    // Apply finite durability and only destroy the boss when its core is spent.
+    // Apply finite durability with radial blast falloff. Hits near the core do more damage.
     if (this.gametype === 'Boss') {
       this.maxHealth = this.maxHealth || 100
-      this.maxHealth -= this.damagePerHit
+      const damage = Math.max(1, Math.round(this.damagePerHit * (0.55 + falloff * 1.45)))
+      this.maxHealth -= damage
       const health = Math.min(100, Math.max(0, (this.maxHealth / this.initialHealth) * 100))
       if (this.onHealthChange) this.onHealthChange(health)
       this.color = '#7f1d2d'

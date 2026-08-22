@@ -259,7 +259,6 @@ export class Reacteroids extends Component {
       for (b; b > -1; --b) {
         var item1 = items1[a]
         var item2 = items2[b]
-        if (item1.delete || item2.delete) continue
         if (this.checkCollision(item1, item2)) {
           const bulletpos = new hitReg(item1, item2, {create: this.createObject.bind(this),
             addScore: this.addScore.bind(this)}).default()

@@ -21,10 +21,14 @@ export default class Asteroid {
     this.name = 'Asteroid'
     this.stage = args.stage || 4
     this.maxHealth = args.maxHealth || (args.gametype === 'Boss' ? 100 : 1)
+    this.initialHealth = this.maxHealth
     this.onHealthChange = args.onHealthChange || null
     this.color = args.color || '#c8a45d'
     this.delete = false
     this.score = args.score || 100
+    this.craters = []
+    this.damagePerHit = args.damagePerHit || (this.gametype === 'Boss' ? 15 : 1)
+    this.mass = Math.max(1, this.radius * this.radius)
 
 
   }
@@ -112,6 +116,25 @@ export default class Asteroid {
 
   }
   destroy (hitPosition) {
+    if (this.delete) return
+
+    const impact = hitPosition || this.position
+    const dx = this.position.x - impact.x
+    const dy = this.position.y - impact.y
+    const distance = Math.max(1, Math.sqrt(dx * dx + dy * dy))
+    const normalX = dx / distance
+    const normalY = dy / distance
+    const impulse = Math.max(0.15, (this.radius / distance) * 0.9)
+    this.velocity.x += normalX * impulse
+    this.velocity.y += normalY * impulse
+    this.craters.push({
+      x: impact.x - this.position.x,
+      y: impact.y - this.position.y,
+      radius: Math.min(28, Math.max(9, this.radius * 0.12)),
+      rotation: this.rotation
+    })
+    if (this.craters.length > 8) this.craters.shift()
+
     this.addScore(this.score)
     // Explode
     for (let i = 0; i < 30; i++) {
@@ -136,27 +159,22 @@ export default class Asteroid {
       this.delete = true
     }
 
-    // decrease boss health
+    // Apply finite durability and only destroy the boss when its core is spent.
     if (this.gametype === 'Boss') {
-      const shrinkPower = 15
-      const size = this.radius - shrinkPower
-      const health = Math.min(100, Math.max(0, ((size - 15) / (this.initialRadius - 15)) * 100))
+      this.maxHealth = this.maxHealth || 100
+      this.maxHealth -= this.damagePerHit
+      const health = Math.min(100, Math.max(0, (this.maxHealth / this.initialHealth) * 100))
       if (this.onHealthChange) this.onHealthChange(health)
-
-      if (size > 15) {
-        this.radius = size
-        // redraw asteroid
-        this.vertices = asteroidVertices(size / 16 * 8, size)
-      this.color = '#7f1d2d' //hitcolor
-      setTimeout(() => {
-        this.color = '#c8a45d'
-        }, 200)
-      } else {
+      this.color = '#7f1d2d'
+      clearTimeout(this.hitFlashTimer)
+      this.hitFlashTimer = setTimeout(() => { this.color = '#c8a45d' }, 160)
+      if (this.maxHealth <= 0) {
         this.delete = true
-        // trigger win condition
         this.onDie(true)
         return
       }
+    } else {
+      this.delete = true
     }
     this.split(hitPosition)
   }
@@ -194,6 +212,21 @@ export default class Asteroid {
     }
     context.closePath()
     context.stroke()
+
+    // Cut dark, irregular impact cavities into the rock surface.
+    context.fillStyle = '#08050a'
+    context.strokeStyle = '#7f1d2d'
+    context.lineWidth = 1.5
+    this.craters.forEach((crater) => {
+      context.save()
+      context.translate(crater.x, crater.y)
+      context.rotate(crater.rotation)
+      context.beginPath()
+      context.ellipse(0, 0, crater.radius, crater.radius * 0.62, 0, 0, Math.PI * 2)
+      context.fill()
+      context.stroke()
+      context.restore()
+    })
     context.restore()
   }
 }

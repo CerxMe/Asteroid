@@ -168,7 +168,8 @@ export class Reacteroids extends Component {
 
     // Make asteroids
     this.asteroids = []
-    // this.generateAsteroids(this.state.asteroidCount)
+    this.bullets = []
+    this.particles = []
     this.boss = this.startBoss()
   }
 
@@ -261,7 +262,8 @@ export class Reacteroids extends Component {
         var item2 = items2[b]
         if (this.checkCollision(item1, item2)) {
           const bulletpos = new hitReg(item1, item2, {create: this.createObject.bind(this),
-            addScore: this.addScore.bind(this)}).default()
+            addScore: this.addScore.bind(this),
+            asteroids: this.asteroids}).default()
           item1.destroy() // kill bullet
           item2.destroy(bulletpos) // kill asteroid
         }

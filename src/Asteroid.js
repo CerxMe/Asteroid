@@ -25,6 +25,9 @@ export default class Asteroid {
     this.color = args.color || '#c8a45d'
     this.delete = false
     this.score = args.score || 100
+    this.impulse = { x: 0, y: 0 }
+    this.impulseDamping = args.gametype === 'Boss' ? 0.985 : 0.94
+    this.impacts = []
 
 
   }
@@ -57,7 +60,7 @@ export default class Asteroid {
     let newSize, numberofrocks, summonedStage, vertices, score
     if (this.gametype === 'Boss') {
       newSize = randomNumBetween(100, 120)
-      numberofrocks = randomNumBetween(1, 2)
+      numberofrocks = 1
       summonedStage = 2
       vertices = asteroidVertices(32, newSize)
       score = 10
@@ -111,7 +114,7 @@ export default class Asteroid {
     }
 
   }
-  destroy (hitPosition) {
+  destroy (hitPosition, damage = 15) {
     this.addScore(this.score)
     // Explode
     for (let i = 0; i < 30; i++) {
@@ -138,8 +141,19 @@ export default class Asteroid {
 
     // decrease boss health
     if (this.gametype === 'Boss') {
-      const shrinkPower = 15
+      const shrinkPower = Math.max(10, Math.min(22, damage))
       const size = this.radius - shrinkPower
+      if (hitPosition) {
+        const dx = hitPosition.x - this.position.x
+        const dy = hitPosition.y - this.position.y
+        const cos = Math.cos(-this.rotation * Math.PI / 180)
+        const sin = Math.sin(-this.rotation * Math.PI / 180)
+        this.impacts.push({
+          x: dx * cos - dy * sin,
+          y: dx * sin + dy * cos,
+          radius: 52
+        })
+      }
       const health = Math.min(100, Math.max(0, ((size - 15) / (this.initialRadius - 15)) * 100))
       if (this.onHealthChange) this.onHealthChange(health)
 
@@ -162,6 +176,10 @@ export default class Asteroid {
   }
   render (state) {
     // Move
+    this.velocity.x += this.impulse.x
+    this.velocity.y += this.impulse.y
+    this.impulse.x *= this.impulseDamping
+    this.impulse.y *= this.impulseDamping
     this.position.x += this.velocity.x
     this.position.y += this.velocity.y
 
@@ -194,6 +212,16 @@ export default class Asteroid {
     }
     context.closePath()
     context.stroke()
+    if (this.gametype === 'Boss') {
+      context.fillStyle = '#08050a'
+      this.impacts.forEach((impact) => {
+        context.beginPath()
+        context.arc(impact.x, impact.y, impact.radius, 0, 2 * Math.PI)
+        context.fill()
+        context.strokeStyle = '#7f1d2d'
+        context.stroke()
+      })
+    }
     context.restore()
   }
 }

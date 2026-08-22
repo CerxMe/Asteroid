@@ -213,10 +213,24 @@ export default class Asteroid {
     context.closePath()
     context.stroke()
     if (this.gametype === 'Boss') {
-      context.fillStyle = '#08050a'
-      this.impacts.forEach((impact) => {
+      // Craters are additional contours in the asteroid's local geometry, not
+      // circles painted over the surface. The inner contour is deliberately
+      // irregular so the impact reads as broken rock while the outer mesh and
+      // rotation remain intact.
+      this.impacts.forEach((impact, impactIndex) => {
+        const points = 12
         context.beginPath()
-        context.arc(impact.x, impact.y, impact.radius, 0, 2 * Math.PI)
+        for (let i = 0; i < points; i++) {
+          const angle = (i / points) * Math.PI * 2
+          const variation = 0.82 + (((impactIndex * 7 + i * 13) % 7) / 20)
+          const x = impact.x + Math.cos(angle) * impact.radius * variation
+          const y = impact.y + Math.sin(angle) * impact.radius * variation
+          if (i === 0) context.moveTo(x, y)
+          else context.lineTo(x, y)
+        }
+        context.closePath()
+        // Cut the irregular contour out of the filled asteroid mesh.
+        context.fillStyle = '#08050a'
         context.fill()
         context.strokeStyle = '#7f1d2d'
         context.stroke()

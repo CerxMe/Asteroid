@@ -112,22 +112,6 @@ export default class hitReg extends Component {
         }
       })
 
-      // Apply a blast impulse to every small debris body in range.
-      const blastRadius = 150
-      this.asteroids.forEach((asteroid) => {
-        if (asteroid === this.item2 || asteroid.gametype !== 'Debree') return
-        const dx = asteroid.position.x - bulletpos.x
-        const dy = asteroid.position.y - bulletpos.y
-        const distance = Math.sqrt(dx * dx + dy * dy)
-        if (distance > blastRadius) return
-        const falloff = 1 - distance / blastRadius
-        const force = Math.max(0.35, falloff * 5)
-        const nx = distance ? dx / distance : 1
-        const ny = distance ? dy / distance : 0
-        asteroid.impulse.x += nx * force
-        asteroid.impulse.y += ny * force
-      })
-
       // Spawn debree on main hit
       // for (let i = 0; i < randomNumBetween(1, 2); i++) {
       //   let asteroid = new Asteroid({

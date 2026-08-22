@@ -31,6 +31,41 @@ export default class Asteroid {
 
 
   }
+
+  deformMeshAt (hitPosition) {
+    const dx = hitPosition.x - this.position.x
+    const dy = hitPosition.y - this.position.y
+    const cos = Math.cos(-this.rotation * Math.PI / 180)
+    const sin = Math.sin(-this.rotation * Math.PI / 180)
+    const localHit = {
+      x: dx * cos - dy * sin,
+      y: dx * sin + dy * cos
+    }
+    const craterRadius = 52
+
+    // Pull the nearby surface vertices toward the impact. This changes the
+    // asteroid's actual polygon mesh instead of painting over it.
+    this.vertices = this.vertices.map((vertex) => {
+      const distance = Math.hypot(vertex.x - localHit.x, vertex.y - localHit.y)
+      if (distance > craterRadius * 1.45) return vertex
+      const strength = Math.max(0, 1 - distance / (craterRadius * 1.45)) * 0.72
+      return {
+        x: vertex.x + (localHit.x - vertex.x) * strength,
+        y: vertex.y + (localHit.y - vertex.y) * strength
+      }
+    })
+
+    const points = 12
+    const contour = Array.from({ length: points }, (_, index) => {
+      const angle = (index / points) * Math.PI * 2
+      const variation = 0.78 + (((this.impacts.length * 7 + index * 13) % 7) / 20)
+      return {
+        x: localHit.x + Math.cos(angle) * craterRadius * variation,
+        y: localHit.y + Math.sin(angle) * craterRadius * variation
+      }
+    })
+    this.impacts.push(contour)
+  }
   /* constructor (args) {
     this.asteroid = args
     this.asteroid.velocity = { x: 0, y: 0 }
@@ -144,15 +179,7 @@ export default class Asteroid {
       const shrinkPower = Math.max(10, Math.min(22, damage))
       const size = this.radius - shrinkPower
       if (hitPosition) {
-        const dx = hitPosition.x - this.position.x
-        const dy = hitPosition.y - this.position.y
-        const cos = Math.cos(-this.rotation * Math.PI / 180)
-        const sin = Math.sin(-this.rotation * Math.PI / 180)
-        this.impacts.push({
-          x: dx * cos - dy * sin,
-          y: dx * sin + dy * cos,
-          radius: 52
-        })
+        this.deformMeshAt(hitPosition)
       }
       const health = Math.min(100, Math.max(0, ((size - 15) / (this.initialRadius - 15)) * 100))
       if (this.onHealthChange) this.onHealthChange(health)
@@ -211,28 +238,33 @@ export default class Asteroid {
       context.lineTo(this.vertices[i].x, this.vertices[i].y)
     }
     context.closePath()
-    context.stroke()
-    if (this.gametype === 'Boss') {
-      // Craters are additional contours in the asteroid's local geometry, not
-      // circles painted over the surface. The inner contour is deliberately
-      // irregular so the impact reads as broken rock while the outer mesh and
-      // rotation remain intact.
-      this.impacts.forEach((impact, impactIndex) => {
-        const points = 12
-        context.beginPath()
-        for (let i = 0; i < points; i++) {
-          const angle = (i / points) * Math.PI * 2
-          const variation = 0.82 + (((impactIndex * 7 + i * 13) % 7) / 20)
-          const x = impact.x + Math.cos(angle) * impact.radius * variation
-          const y = impact.y + Math.sin(angle) * impact.radius * variation
-          if (i === 0) context.moveTo(x, y)
-          else context.lineTo(x, y)
+
+    if (this.gametype === 'Boss' && this.impacts.length > 0) {
+      // The asteroid and every crater are one compound mesh. The even-odd
+      // fill rule removes the crater contours from the rock rather than
+      // drawing a circle on top of its surface.
+      this.impacts.forEach((contour) => {
+        context.moveTo(contour[0].x, contour[0].y)
+        for (let i = 1; i < contour.length; i++) {
+          context.lineTo(contour[i].x, contour[i].y)
         }
         context.closePath()
-        // Cut the irregular contour out of the filled asteroid mesh.
-        context.fillStyle = '#08050a'
-        context.fill()
-        context.strokeStyle = '#7f1d2d'
+      })
+      context.fillStyle = '#08050a'
+      context.fill('evenodd')
+    }
+
+    context.strokeStyle = this.color
+    context.stroke()
+    if (this.gametype === 'Boss') {
+      context.strokeStyle = '#7f1d2d'
+      this.impacts.forEach((contour) => {
+        context.beginPath()
+        context.moveTo(contour[0].x, contour[0].y)
+        for (let i = 1; i < contour.length; i++) {
+          context.lineTo(contour[i].x, contour[i].y)
+        }
+        context.closePath()
         context.stroke()
       })
     }

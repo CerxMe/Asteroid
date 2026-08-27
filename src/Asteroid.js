@@ -35,33 +35,41 @@ export default class Asteroid {
   deformMeshAt (hitPosition) {
     const dx = hitPosition.x - this.position.x
     const dy = hitPosition.y - this.position.y
-    const cos = Math.cos(-this.rotation * Math.PI / 180)
-    const sin = Math.sin(-this.rotation * Math.PI / 180)
-    const localHit = {
-      x: dx * cos - dy * sin,
-      y: dx * sin + dy * cos
+    const angle = Math.atan2(dy, dx) - (this.rotation * Math.PI / 180)
+    const craterRadius = Math.min(52, this.radius * 0.38)
+    const rimRadius = craterRadius * 1.55
+    const center = {
+      x: Math.cos(angle) * Math.max(0, this.radius - craterRadius * 0.35),
+      y: Math.sin(angle) * Math.max(0, this.radius - craterRadius * 0.35)
     }
-    const craterRadius = 52
 
-    // Pull the nearby surface vertices toward the impact. This changes the
-    // asteroid's actual polygon mesh instead of painting over it.
+    // Deform the actual polygon boundary. Vertices near the impact direction
+    // are displaced inward with a smooth angular falloff, producing a real
+    // concave crater in the mesh rather than a mark painted over the rock.
     this.vertices = this.vertices.map((vertex) => {
-      const distance = Math.hypot(vertex.x - localHit.x, vertex.y - localHit.y)
-      if (distance > craterRadius * 1.45) return vertex
-      const strength = Math.max(0, 1 - distance / (craterRadius * 1.45)) * 0.72
+      const vertexAngle = Math.atan2(vertex.y, vertex.x)
+      let angularDistance = Math.abs(vertexAngle - angle)
+      if (angularDistance > Math.PI) angularDistance = Math.PI * 2 - angularDistance
+      const surfaceDistance = Math.hypot(vertex.x - center.x, vertex.y - center.y)
+      const angularFalloff = Math.max(0, 1 - angularDistance / (Math.PI * 0.42))
+      const radialFalloff = Math.max(0, 1 - surfaceDistance / rimRadius)
+      const strength = angularFalloff * (0.72 + radialFalloff * 0.28)
+      if (strength <= 0) return vertex
+
+      const inward = craterRadius * strength
       return {
-        x: vertex.x + (localHit.x - vertex.x) * strength,
-        y: vertex.y + (localHit.y - vertex.y) * strength
+        x: vertex.x - Math.cos(angle) * inward,
+        y: vertex.y - Math.sin(angle) * inward
       }
     })
 
     const points = 12
     const contour = Array.from({ length: points }, (_, index) => {
-      const angle = (index / points) * Math.PI * 2
+      const theta = (index / points) * Math.PI * 2
       const variation = 0.78 + (((this.impacts.length * 7 + index * 13) % 7) / 20)
       return {
-        x: localHit.x + Math.cos(angle) * craterRadius * variation,
-        y: localHit.y + Math.sin(angle) * craterRadius * variation
+        x: center.x + Math.cos(theta) * craterRadius * variation,
+        y: center.y + Math.sin(theta) * craterRadius * variation
       }
     })
     this.impacts.push(contour)
@@ -185,9 +193,14 @@ export default class Asteroid {
       if (this.onHealthChange) this.onHealthChange(health)
 
       if (size > 15) {
+        const scale = size / this.radius
         this.radius = size
-        // redraw asteroid
-        this.vertices = asteroidVertices(size / 16 * 8, size)
+        // Scale the already-deformed mesh with the shrinking asteroid. Do not
+        // regenerate vertices, or every crater would be erased after impact.
+        this.vertices = this.vertices.map((vertex) => ({
+          x: vertex.x * scale,
+          y: vertex.y * scale
+        }))
       this.color = '#7f1d2d' //hitcolor
       setTimeout(() => {
         this.color = '#c8a45d'
@@ -233,9 +246,13 @@ export default class Asteroid {
     context.strokeStyle = this.color
     context.lineWidth = 2
     context.beginPath()
-    context.moveTo(0, -this.radius)
-    for (let i = 1; i < this.vertices.length; i++) {
-      context.lineTo(this.vertices[i].x, this.vertices[i].y)
+    // Draw the deformed vertex mesh exactly as stored; the first vertex is
+    // part of the contour too and must not be replaced by a circle point.
+    if (this.vertices.length > 0) {
+      context.moveTo(this.vertices[0].x, this.vertices[0].y)
+      for (let i = 1; i < this.vertices.length; i++) {
+        context.lineTo(this.vertices[i].x, this.vertices[i].y)
+      }
     }
     context.closePath()
 
